@@ -1,10 +1,12 @@
+from __future__ import annotations
+
 from typing import List, Union
 from datetime import datetime
 
 from pydantic import BaseModel
 
 
-class Subcription(BaseModel):
+class SubcriptionBase(BaseModel):
     id: int
     item_id: int
     user_id: int
@@ -18,9 +20,16 @@ class Subcription(BaseModel):
     
     class Config:
         orm_mode = True
-        
 
-class Item(BaseModel):
+class Subcription(SubcriptionBase):
+    owner: UserBase
+    item_info: ItemBase
+    
+    class Config:
+        orm_mode = True
+
+
+class ItemBase(BaseModel):
     id: int
     owner_id: int
 
@@ -37,13 +46,18 @@ class Item(BaseModel):
     is_active: bool
     created_time: datetime
     
-    subcriptions: List[Subcription] = []
+    class Config:
+        orm_mode = True
+
+class Item(ItemBase):
+    owner: UserBase
+    subcribers: List[SubcriptionBase] = []
 
     class Config:
         orm_mode = True
 
 
-class User(BaseModel):
+class UserBase(BaseModel):
     id: int
     name: str
     date_of_birth: datetime
@@ -51,9 +65,16 @@ class User(BaseModel):
     is_active: bool
     created_time: datetime
     
-    items: List[Item] = []
-    subcriptions: List[Subcription] = []
-
     class Config:
         orm_mode = True
     
+class User(UserBase):
+    items: List[ItemBase] = []
+    subcriptions: List[SubcriptionBase] = []
+
+    class Config:
+        orm_mode = True
+
+
+Subcription.update_forward_refs()
+Item.update_forward_refs()

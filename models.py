@@ -14,7 +14,8 @@ class User(Base):
     is_active = Column(Boolean, default=True)
     created_time = Column(DateTime)
     
-    # items = relationship("Item", back_populates="owner")
+    items = relationship("Item", back_populates="owner")
+    subcriptions = relationship("Subcription")
 
 
 class Item(Base):
@@ -36,7 +37,8 @@ class Item(Base):
     is_active = Column(Boolean, default=True)
     created_time = Column(DateTime)
 
-    # owner = relationship("User", back_populates="items")
+    owner = relationship("User", back_populates="items")
+    subcribers = relationship("Subcription")
     
 class Subcription(Base):
     __tablename__ = "subcriptions"
@@ -52,5 +54,5 @@ class Subcription(Base):
     is_active = Column(Boolean, default=True)
     created_time = Column(DateTime)
     
-    # item = relationship("Item", back_populates="subcriptions")
-    # user = relationship("User", back_populates="subcriptions")
+    owner = relationship("User")
+    item_info = relationship("Item")
