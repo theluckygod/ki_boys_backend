@@ -1,10 +1,10 @@
 CREATE TABLE users(  
     id int NOT NULL PRIMARY KEY AUTO_INCREMENT COMMENT 'Primary Key',
     name NVARCHAR(255) NOT NULL COMMENT 'Name',
-    date_of_birth DATE COMMENT 'Date of Birth',
+    date_of_birth DATETIME COMMENT 'Date of Birth',
     
     is_active BOOLEAN DEFAULT TRUE COMMENT 'Is Active',
-    create_time DATETIME DEFAULT NOW() COMMENT 'Create Time'
+    created_time DATETIME DEFAULT NOW() COMMENT 'Create Time'
 ) COMMENT '';
 
 
@@ -18,12 +18,12 @@ CREATE TABLE items(
     type NVARCHAR(255) NOT NULL COMMENT 'Type',
     location NVARCHAR(255) COMMENT 'Location',
     price FLOAT COMMENT 'Price',
-    max_participants int COMMENT 'Max Participants',
+    max_participants int NOT NULL COMMENT 'Max Participants',
     start_time DATETIME COMMENT 'Start Time',
     subcription_deadline DATETIME COMMENT 'Subcription Deadline',
 
     is_active BOOLEAN DEFAULT TRUE COMMENT 'Is Active',
-    create_time DATETIME DEFAULT NOW() COMMENT 'Create Time',
+    created_time DATETIME DEFAULT NOW() COMMENT 'Create Time',
 
     FOREIGN KEY (owner_id) REFERENCES users(id)
 ) COMMENT '';
@@ -35,10 +35,10 @@ CREATE TABLE subcriptions(
 
     status NVARCHAR(255) NOT NULL COMMENT 'Status',
     message NVARCHAR(255) COMMENT 'Message',
-    participants_num int COMMENT 'Participants Number',
+    participants_num int NOT NULL COMMENT 'Participants Number',
 
     is_active BOOLEAN DEFAULT TRUE COMMENT 'Is Active',
-    create_time DATETIME DEFAULT NOW() COMMENT 'Create Time',
+    created_time DATETIME DEFAULT NOW() COMMENT 'Create Time',
 
     FOREIGN KEY (item_id) REFERENCES items(id),
     FOREIGN KEY (user_id) REFERENCES users(id)

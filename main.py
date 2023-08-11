@@ -1,5 +1,6 @@
 from typing import Union, List
 from typing_extensions import Annotated
+import requests
 
 from fastapi import FastAPI, Header, Depends, HTTPException
 from sqlalchemy.orm import Session
@@ -8,6 +9,7 @@ import crud
 import models
 import schemas
 from database import SessionLocal, engine
+
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -22,45 +24,42 @@ def get_db():
     finally:
         db.close()
 
-
-@app.post("/users/", response_model=schemas.User)
-def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
-    db_user = crud.get_user_by_email(db, email=user.email)
-    if db_user:
-        raise HTTPException(status_code=400, detail="Email already registered")
-    return crud.create_user(db=db, user=user)
+@app.get("/users/me")
+async def get_me(token: Annotated[str, Header()]):
+    # response = requests.get(url="https://graph.zalo.me/v2.0/me",
+    #                         headers={"access_token": token})
+    
+    response = {
+        "is_sensitive": False,
+        "name": "Tùng Nguyễn",
+        "id": "3681046936240438345",
+        "error": 0,
+        "message": "Success",
+        "picture": {
+            "data": {
+                "url": "https://s120-ava-talk.zadn.vn/a/a/6/e/37/120/84f0ddd1d0f1edf0831c92cf4960e3ec.jpg"
+            }
+        }
+    }
+    return response
 
 
 @app.get("/users/", response_model=List[schemas.User])
-def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+async def read_users(token: Annotated[str, Header()], skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     users = crud.get_users(db, skip=skip, limit=limit)
     return users
 
 
-@app.get("/users/{user_id}", response_model=schemas.User)
-def read_user(user_id: int, db: Session = Depends(get_db)):
-    db_user = crud.get_user(db, user_id=user_id)
-    if db_user is None:
-        raise HTTPException(status_code=404, detail="User not found")
-    return db_user
-
-
-@app.post("/users/{user_id}/items/", response_model=schemas.Item)
-def create_item_for_user(
-    user_id: int, item: schemas.ItemCreate, db: Session = Depends(get_db)
-):
-    return crud.create_user_item(db=db, item=item, user_id=user_id)
-
-
 @app.get("/items/", response_model=List[schemas.Item])
-def read_items(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+def read_items(token: Annotated[str, Header()], skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     items = crud.get_items(db, skip=skip, limit=limit)
     return items
 
 
-@app.get("/get_meetings/")
-async def get_meetings(user_agent: Annotated[Union[str, None], Header()] = None):
-    return {"User-Agent": user_agent}
+@app.get("/subcriptions/", response_model=List[schemas.Subcription])
+def read_subcriptions(token: Annotated[str, Header()], skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    subcriptions = crud.get_subcriptions(db, skip=skip, limit=limit)
+    return subcriptions
 
 
 if __name__ == "__main__":
@@ -75,4 +74,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     uvicorn.run("main:app", host=args.host, port=args.port,
-                workers=args.workers, log_level=args.log_level)
+                workers=args.workers, log_level=args.log_level, reload=True)

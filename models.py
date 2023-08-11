@@ -14,7 +14,7 @@ class User(Base):
     is_active = Column(Boolean, default=True)
     created_time = Column(DateTime)
     
-    items = relationship("Item", back_populates="owner")
+    # items = relationship("Item", back_populates="owner")
 
 
 class Item(Base):
@@ -33,10 +33,10 @@ class Item(Base):
     start_time = Column(DateTime)
     subcription_deadline = Column(DateTime)
 
-    is_activate = Column(Boolean, default=True)
+    is_active = Column(Boolean, default=True)
     created_time = Column(DateTime)
 
-    owner = relationship("User", back_populates="items")
+    # owner = relationship("User", back_populates="items")
     
 class Subcription(Base):
     __tablename__ = "subcriptions"
@@ -49,8 +49,8 @@ class Subcription(Base):
     message = Column(String)
     participants_num = Column(Integer)
        
-    is_activate = Column(Boolean, default=True)
+    is_active = Column(Boolean, default=True)
     created_time = Column(DateTime)
     
-    item = relationship("Item", back_populates="subcriptions")
-    user = relationship("User", back_populates="subcriptions")
+    # item = relationship("Item", back_populates="subcriptions")
+    # user = relationship("User", back_populates="subcriptions")
