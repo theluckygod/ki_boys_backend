@@ -35,7 +35,7 @@ def verify_token(req: Request):
 
 
 @app.get("/users/me")
-async def get_me(token: Annotated[str, Header()]):
+async def get_me(token: Annotated[str, Header()], db: Session = Depends(get_db)):
     if token not in AUTHORIZED_TOKENS:
         # response = requests.get(url="https://graph.zalo.me/v2.0/me",
         #                         headers={"access_token": token})
@@ -53,27 +53,31 @@ async def get_me(token: Annotated[str, Header()]):
             }
         }
         
-        AUTHORIZED_TOKENS[token] = response
+        user = schemas.UserCreate.from_json(response)
+        db_user = crud.get_user(db, user_id=user.id)
+        if db_user is None:
+            db_user = crud.create_user(db=db, user=user)
     else:
-        response = AUTHORIZED_TOKENS[token]
+        db_user = AUTHORIZED_TOKENS[token]
 
-    return response
+    AUTHORIZED_TOKENS[token] = db_user
+    return db_user
 
 
 @app.get("/users/", response_model=List[schemas.User])
-async def read_users(user_info: dict = Depends(verify_token), skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+async def read_users(user_info: schemas.User = Depends(verify_token), skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     users = crud.get_users(db, skip=skip, limit=limit)
     return users
 
 
 @app.get("/items/", response_model=List[schemas.Item])
-def read_items(user_info: dict = Depends(verify_token), skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+def read_items(user_info: schemas.User = Depends(verify_token), skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     items = crud.get_items(db, skip=skip, limit=limit)
     return items
 
 
 @app.get("/subcriptions/", response_model=List[schemas.Subcription])
-def read_subcriptions(user_info: dict = Depends(verify_token), skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+def read_subcriptions(user_info: schemas.User = Depends(verify_token), skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     subcriptions = crud.get_subcriptions(db, skip=skip, limit=limit)
     return subcriptions
 

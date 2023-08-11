@@ -7,12 +7,13 @@ from database import Base
 class User(Base):
     __tablename__ = "users"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(String, primary_key=True, index=True)
     name = Column(String)
     date_of_birth = Column(DateTime)
+    picture = Column(String)
 
-    is_active = Column(Boolean, default=True)
-    created_time = Column(DateTime)
+    is_active = Column(Boolean, nullable=False, server_default='fnord')
+    created_time = Column(DateTime, nullable=False, server_default='fnord')
     
     items = relationship("Item", back_populates="owner")
     subcriptions = relationship("Subcription")
@@ -22,9 +23,9 @@ class Item(Base):
     __tablename__ = "items"
 
     id = Column(Integer, primary_key=True, index=True)
-    owner_id = Column(Integer, ForeignKey("users.id"))
+    owner_id = Column(String, ForeignKey("users.id"))
     
-    title = Column(String)
+    title = Column(String, nullable=False)
     description = Column(String)
     
     type = Column(String)
@@ -34,8 +35,8 @@ class Item(Base):
     start_time = Column(DateTime)
     subcription_deadline = Column(DateTime)
 
-    is_active = Column(Boolean, default=True)
-    created_time = Column(DateTime)
+    is_active = Column(Boolean, nullable=False, server_default='fnord')
+    created_time = Column(DateTime, nullable=False, server_default='fnord')
 
     owner = relationship("User", back_populates="items")
     subcribers = relationship("Subcription")
@@ -45,14 +46,14 @@ class Subcription(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     item_id = Column(Integer, ForeignKey("items.id"))
-    user_id = Column(Integer, ForeignKey("users.id"))
+    user_id = Column(String, ForeignKey("users.id"))
     
-    status = Column(String, default=False)
+    status = Column(String, nullable=False, default='waiting')
     message = Column(String)
-    participants_num = Column(Integer)
+    participants_num = Column(Integer, nullable=False)
        
-    is_active = Column(Boolean, default=True)
-    created_time = Column(DateTime)
+    is_active = Column(Boolean, nullable=False, server_default='fnord')
+    created_time = Column(DateTime, nullable=False, server_default='fnord')
     
-    owner = relationship("User")
+    subcriber = relationship("User")
     item_info = relationship("Item")

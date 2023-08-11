@@ -11,7 +11,7 @@ def get_users(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.User).offset(skip).limit(limit).all()
 
 
-def create_user(db: Session, user: schemas.User):
+def create_user(db: Session, user: schemas.UserCreate):
     db_user = models.User(**user.dict())
     db.add(db_user)
     db.commit()
@@ -23,7 +23,7 @@ def get_items(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.Item).offset(skip).limit(limit).all()
 
 
-def create_user_item(db: Session, item: schemas.Item, user_id: int):
+def create_item(db: Session, item: schemas.ItemCreate, user_id: int):
     db_item = models.Item(**item.dict(), owner_id=user_id)
     db.add(db_item)
     db.commit()
@@ -35,8 +35,8 @@ def get_subcriptions(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.Subcription).offset(skip).limit(limit).all()
 
 
-def create_subcription(db: Session, subcription: schemas.Subcription, item_id: int, user_id: int):
-    db_subcription = models.Subcription(**subcription.dict(), item_id=item_id, user_id=user_id, status="waiting")
+def create_subcription(db: Session, subcription: schemas.SubcriptionCreate, item_id: int, user_id: int):
+    db_subcription = models.Subcription(**subcription.dict(), item_id=item_id, user_id=user_id)
     db.add(db_subcription)
     db.commit()
     db.refresh(db_subcription)
