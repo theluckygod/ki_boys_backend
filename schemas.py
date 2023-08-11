@@ -35,7 +35,7 @@ class SubcriptionCreate(BaseModel):
     user_id: str
     
     message: Union[str, None] = None
-    participants_num: int
+    participants_num: Union[int, None] = 1
     
 
 class ItemBase(BaseModel):

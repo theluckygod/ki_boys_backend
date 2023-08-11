@@ -71,15 +71,26 @@ async def read_users(user_info: schemas.User = Depends(verify_token), skip: int 
 
 
 @app.get("/items/", response_model=List[schemas.Item])
-def read_items(user_info: schemas.User = Depends(verify_token), skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    items = crud.get_items(db, skip=skip, limit=limit)
+@app.get("/api/list", response_model=List[schemas.Item])
+async def read_items(user_info: schemas.User = Depends(verify_token), sport: Union[str, None] = None, skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    items = crud.get_items(db, sport=sport, skip=skip, limit=limit)
     return items
 
 
 @app.get("/subcriptions/", response_model=List[schemas.Subcription])
-def read_subcriptions(user_info: schemas.User = Depends(verify_token), skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+async def read_subcriptions(user_info: schemas.User = Depends(verify_token), skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     subcriptions = crud.get_subcriptions(db, skip=skip, limit=limit)
     return subcriptions
+
+@app.post("/api/register/", response_model=schemas.Item)
+async def create_item(item: schemas.ItemCreate, user_info: schemas.User = Depends(verify_token), db: Session = Depends(get_db)):
+    return crud.create_item(db=db, item=item, user_id=user_info.id)
+
+@app.post("/api/join", response_model=schemas.Subcription)
+async def create_subcription(subcription: schemas.SubcriptionCreate, 
+                             user_info: schemas.User = Depends(verify_token), 
+                             db: Session = Depends(get_db)):
+    return crud.create_subcription(db=db, subcription=subcription, item_id=subcription.item_id, user_id=user_info.id)
 
 
 if __name__ == "__main__":
