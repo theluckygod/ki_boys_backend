@@ -3,6 +3,7 @@ from typing_extensions import Annotated
 import requests
 
 from fastapi import FastAPI, Header, Depends, HTTPException, Request
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 
 import crud
@@ -14,6 +15,13 @@ from database import SessionLocal, engine
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 AUTHORIZED_TOKENS = {}
 
 # Dependency
@@ -37,8 +45,30 @@ def verify_token(req: Request):
 @app.get("/users/me")
 async def get_me(token: Annotated[str, Header()], db: Session = Depends(get_db)):
     if token not in AUTHORIZED_TOKENS:
-        response = requests.get(url="https://graph.zalo.me/v2.0/me",
-                                headers={"access_token": token})       
+        if token == "test":
+            response = {
+                "is_sensitive": False,
+                "name": "User 2",
+                "id": "2",
+                "error": 0,
+                "message": "Success",
+                "picture": {
+                    "data": {
+                        "url": "https://s120-ava-talk.zadn.vn/a/a/6/e/37/120/84f0ddd1d0f1edf0831c92cf4960e3ec.jpg"
+                    }
+                }
+            }
+        else:
+            response = requests.get(url="https://graph.zalo.me/v2.0/me?fields=id,name,birthday,picture",
+                                    headers={"access_token": token})
+            if response.status_code != 200:
+                raise HTTPException(
+                    status_code=401,
+                    detail="Invalid token"
+                )
+            
+            response = response.json()
+        
         user = schemas.UserCreate.from_json(response)
         db_user = crud.get_user(db, user_id=user.id)
         if db_user is None:
@@ -60,6 +90,13 @@ async def read_users(user_info: schemas.User = Depends(verify_token), skip: int 
 @app.get("/api/list", response_model=List[schemas.Item])
 async def read_items(user_info: schemas.User = Depends(verify_token), sport: Union[str, None] = None, skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     items = crud.get_items(db, sport=sport, skip=skip, limit=limit)
+    return items
+
+
+@app.get("/items/me", response_model=List[schemas.Item])
+@app.get("/api/list/me", response_model=List[schemas.Item])
+async def read_items(user_info: schemas.User = Depends(verify_token), sport: Union[str, None] = None, skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    items = crud.get_items(db, owner_id=user_info.id, sport=sport, skip=skip, limit=limit)
     return items
 
 

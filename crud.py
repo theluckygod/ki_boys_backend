@@ -19,8 +19,12 @@ def create_user(db: Session, user: schemas.UserCreate):
     return db_user
 
 
-def get_items(db: Session, sport: str = None, skip: int = 0, limit: int = 100):
+def get_items(db: Session, owner_id: str = None, sport: str = None, skip: int = 0, limit: int = 100):
     temp = db.query(models.Item)
+    
+    if owner_id is not None:
+        temp = temp.filter(models.Item.owner_id == owner_id)
+    
     if sport is not None:
         temp = temp.filter(models.Item.type == sport)
     
