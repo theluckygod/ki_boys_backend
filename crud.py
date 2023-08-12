@@ -44,10 +44,10 @@ def get_subcriptions(db: Session, skip: int = 0, limit: int = 100):
 
 
 def create_subcription(db: Session, subcription: schemas.SubcriptionCreate, user_id: int):
-    subcription = db.query(models.Subcription).filter(models.Subcription.item_id == subcription.item_id) \
+    db_subcription = db.query(models.Subcription).filter(models.Subcription.item_id == subcription.item_id) \
                     .filter(models.Subcription.user_id == user_id).first()
-    if subcription is not None:
-        return subcription
+    if db_subcription is not None:
+        return db_subcription
     
     db_subcription = models.Subcription(**subcription.dict(), user_id=user_id)
     db.add(db_subcription)

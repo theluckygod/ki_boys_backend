@@ -125,7 +125,7 @@ async def create_subcription(subcription: schemas.SubcriptionCreate,
 
 @app.post("/items/cancel", response_model=schemas.Item)
 @app.post("/api/cancel", response_model=schemas.Item)
-async def cancel_item(item_id, user_info: schemas.User = Depends(verify_token), db: Session = Depends(get_db)):
+async def cancel_item(item_id: str, user_info: schemas.User = Depends(verify_token), db: Session = Depends(get_db)):
     return crud.cancel_item(db=db, item_id=item_id, user_id=user_info.id)
 
 @app.post("/subcriptions/leave", response_model=schemas.Subcription)
