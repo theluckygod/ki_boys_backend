@@ -37,22 +37,8 @@ def verify_token(req: Request):
 @app.get("/users/me")
 async def get_me(token: Annotated[str, Header()], db: Session = Depends(get_db)):
     if token not in AUTHORIZED_TOKENS:
-        # response = requests.get(url="https://graph.zalo.me/v2.0/me",
-        #                         headers={"access_token": token})
-    
-        response = {
-            "is_sensitive": False,
-            "name": "Tùng Nguyễn",
-            "id": "3681046936240438345",
-            "error": 0,
-            "message": "Success",
-            "picture": {
-                "data": {
-                    "url": "https://s120-ava-talk.zadn.vn/a/a/6/e/37/120/84f0ddd1d0f1edf0831c92cf4960e3ec.jpg"
-                }
-            }
-        }
-        
+        response = requests.get(url="https://graph.zalo.me/v2.0/me",
+                                headers={"access_token": token})       
         user = schemas.UserCreate.from_json(response)
         db_user = crud.get_user(db, user_id=user.id)
         if db_user is None:
