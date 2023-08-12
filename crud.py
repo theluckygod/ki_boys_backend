@@ -43,10 +43,25 @@ def get_subcriptions(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.Subcription).offset(skip).limit(limit).all()
 
 
+def get_subcriptions_me(db: Session, user_id: int, skip: int = 0, limit: int = 100):
+    return db.query(models.Subcription).filter(models.Subcription.user_id == user_id).offset(skip).limit(limit).all()
+
+
 def create_subcription(db: Session, subcription: schemas.SubcriptionCreate, user_id: int):
+    db_item = db.query(models.Item).filter(models.Item.id == subcription.item_id).first()
+    if db_item is None:
+        raise Exception("Item not found")
+    
+    if db_item.max_participants <= sum([sub.participants_num for sub in db_item.subcriptions if sub.is_active]): # and sub.status == 'accepted'
+        raise Exception("Item is full")
+    
     db_subcription = db.query(models.Subcription).filter(models.Subcription.item_id == subcription.item_id) \
                     .filter(models.Subcription.user_id == user_id).first()
     if db_subcription is not None:
+        if db_subcription.is_active == False:
+            db_subcription.is_active = True
+            db.commit()
+            db.refresh(db_subcription)
         return db_subcription
     
     db_subcription = models.Subcription(**subcription.dict(), user_id=user_id)
@@ -77,3 +92,14 @@ def leave_subcription(db: Session, subcription_id: int, user_id: int):
     else:
         raise Exception("You are not the owner of this subcription")
     
+
+def leave_item_subcription(db: Session, item_id: int, user_id: int):
+    db_subcription = db.query(models.Subcription).filter(models.Subcription.item_id == item_id) \
+                    .filter(models.Subcription.user_id == user_id).first()
+    if db_subcription is not None:
+        db_subcription.is_active = False
+        db.commit()
+        db.refresh(db_subcription)
+        return db_subcription
+    else:
+        raise Exception("You are not the owner of this subcription")

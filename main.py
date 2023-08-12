@@ -106,6 +106,12 @@ async def read_subcriptions(user_info: schemas.User = Depends(verify_token), ski
     subcriptions = crud.get_subcriptions(db, skip=skip, limit=limit)
     return subcriptions
 
+@app.get("/subcriptions/me", response_model=List[schemas.Subcription])
+async def read_subcriptions(user_info: schemas.User = Depends(verify_token), skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    subcriptions = crud.get_subcriptions_me(db, user_id=user_info.id, skip=skip, limit=limit)
+    return subcriptions
+
+
 @app.post("/api/register/", response_model=schemas.Item)
 async def create_item(item: Union[schemas.ItemCreate, schemas.ItemCreateDateAndTime], 
                       user_info: schemas.User = Depends(verify_token), 
@@ -130,8 +136,13 @@ async def cancel_item(item_id: str, user_info: schemas.User = Depends(verify_tok
 
 @app.post("/subcriptions/leave", response_model=schemas.Subcription)
 @app.post("/api/leave", response_model=schemas.Subcription)
-async def leave_subcription(subcription_id, user_info: schemas.User = Depends(verify_token), db: Session = Depends(get_db)):
-    return crud.leave_subcription(db=db, subcription_id=subcription_id, user_id=user_info.id)
+async def leave_subcription(subcription_id: Union[str, None] = None, 
+                            item_id: Union[str, None] = None,
+                            user_info: schemas.User = Depends(verify_token), db: Session = Depends(get_db)):
+    if subcription_id is not None:
+        return crud.leave_subcription(db=db, subcription_id=subcription_id, user_id=user_info.id)
+    if item_id is not None:
+        return crud.leave_item_subcription(db=db, item_id=item_id, user_id=user_info.id)
 
 
 
