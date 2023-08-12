@@ -39,7 +39,7 @@ class Item(Base):
     created_time = Column(DateTime, nullable=False, server_default='fnord')
 
     owner = relationship("User", back_populates="items")
-    subcribers = relationship("Subcription")
+    subcriptions = relationship("Subcription")
     
 class Subcription(Base):
     __tablename__ = "subcriptions"

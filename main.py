@@ -1,6 +1,7 @@
 from typing import Union, List
 from typing_extensions import Annotated
 import requests
+from datetime import datetime
 
 from fastapi import FastAPI, Header, Depends, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -106,14 +107,32 @@ async def read_subcriptions(user_info: schemas.User = Depends(verify_token), ski
     return subcriptions
 
 @app.post("/api/register/", response_model=schemas.Item)
-async def create_item(item: schemas.ItemCreate, user_info: schemas.User = Depends(verify_token), db: Session = Depends(get_db)):
+async def create_item(item: Union[schemas.ItemCreate, schemas.ItemCreateDateAndTime], 
+                      user_info: schemas.User = Depends(verify_token), 
+                      db: Session = Depends(get_db)):
+    if isinstance(item, schemas.ItemCreateDateAndTime):
+        start_time = datetime.combine(item.date, item.time)
+        item_obj = schemas.ItemCreate(**item.dict(), start_time=start_time)
+        item = item_obj
+    
     return crud.create_item(db=db, item=item, user_id=user_info.id)
 
 @app.post("/api/join", response_model=schemas.Subcription)
 async def create_subcription(subcription: schemas.SubcriptionCreate, 
                              user_info: schemas.User = Depends(verify_token), 
                              db: Session = Depends(get_db)):
-    return crud.create_subcription(db=db, subcription=subcription, item_id=subcription.item_id, user_id=user_info.id)
+    return crud.create_subcription(db=db, subcription=subcription, user_id=user_info.id)
+
+@app.post("/items/cancel", response_model=schemas.Item)
+@app.post("/api/cancel", response_model=schemas.Item)
+async def cancel_item(item_id, user_info: schemas.User = Depends(verify_token), db: Session = Depends(get_db)):
+    return crud.cancel_item(db=db, item_id=item_id, user_id=user_info.id)
+
+@app.post("/subcriptions/leave", response_model=schemas.Subcription)
+@app.post("/api/leave", response_model=schemas.Subcription)
+async def leave_subcription(subcription_id, user_info: schemas.User = Depends(verify_token), db: Session = Depends(get_db)):
+    return crud.leave_subcription(db=db, subcription_id=subcription_id, user_id=user_info.id)
+
 
 
 if __name__ == "__main__":

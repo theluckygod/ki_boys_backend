@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from typing import List, Union
-from datetime import datetime
+from datetime import datetime, date, time
 import json
 
 from pydantic import BaseModel
@@ -32,8 +32,7 @@ class Subcription(SubcriptionBase):
 
 class SubcriptionCreate(BaseModel):
     item_id: int
-    user_id: str
-    
+        
     message: Union[str, None] = None
     participants_num: Union[int, None] = 1
     
@@ -60,7 +59,7 @@ class ItemBase(BaseModel):
 
 class Item(ItemBase):
     owner: UserBase
-    subcribers: List[SubcriptionBase] = []
+    subcriptions: List[SubcriptionBase] = []
 
     class Config:
         orm_mode = True
@@ -75,6 +74,19 @@ class ItemCreate(BaseModel):
     price: Union[float, None] = None
     max_participants: int
     start_time: Union[datetime, None] = None
+    subcription_deadline: Union[datetime, None] = None
+    
+    
+class ItemCreateDateAndTime(BaseModel):
+    title: str
+    description: Union[str, None] = None
+    
+    type: str
+    location: Union[str, None] = None
+    price: Union[float, None] = None
+    max_participants: int
+    date: date
+    time: time
     subcription_deadline: Union[datetime, None] = None
     
 
